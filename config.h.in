@@ -1,1 +1,1 @@
-#define PACKAGE_VERSION "@PROJECT_VERSION@"
+#define PACKAGE_VERSION "@version@"

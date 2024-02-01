@@ -1,14 +1,19 @@
-project('rkdeveloptool', 'cpp', version: '1.0.0')
+project('rkdeveloptool', 'cpp', version: '1.3.2')
 
-libusb = dependency('libusb-1.0')
+# make sure we have libusb and acquire it if not
+libusb = dependency('libusb-1.0', fallback: ['libusb', 'libusb_dep'])
 
+# set up config file
 conf = configuration_data()
-conf.set_quoted('PACKAGE_VERSION', meson.project_version())
+conf.set_quoted('version', meson.project_version())
 configure_file(
+    input: 'config.h.in',
     output: 'config.h',
     configuration: conf,
 )
 
+
+# the actual executable
 executable(
     'rkdeveloptool',
     'main.cpp',
@@ -24,13 +29,19 @@ executable(
 )
 
 
-# Install udev rules for the usb part
-udev = dependency('udev')
-udev_rules_dir = udev.get_pkgconfig_variable('udevdir') + '/rules.d'
-install_data(
-    ['99-rk-rockusb.rules'],
-    install_dir: udev_rules_dir,
-)
+# Install udev rules if udev is available
+udev = dependency('udev', required: false)
+if udev.found()
+    udevdir = udev.get_pkgconfig_variable('udevdir')
+    udev_rules_dir = udevdir + '/rules.d'
+    install_data(
+        ['99-rk-rockusb.rules'],
+        install_dir: udev_rules_dir,
+    )
+else
+    message('udev not found, not installing udev rules')
+endif
+
 
 # Build and install the man pages
 scdoc = dependency(
@@ -59,4 +70,6 @@ if scdoc.found()
             install_dir: '@0@/man@1@'.format(mandir, section),
         )
     endforeach
+else
+    message('scdoc not found, will not build docs')
 endif
