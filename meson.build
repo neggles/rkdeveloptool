@@ -5,7 +5,7 @@ libusb = dependency('libusb-1.0', fallback: ['libusb', 'libusb_dep'])
 
 # set up config file
 conf = configuration_data()
-conf.set_quoted('version', meson.project_version())
+conf.set('version', meson.project_version())
 configure_file(
     input: 'config.h.in',
     output: 'config.h',
